@@ -8,7 +8,7 @@ class Auth {
         if (this.token) {
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.token;
         
-            // this.getUser();
+            this.getUser();
         }
     }
 
@@ -27,14 +27,9 @@ class Auth {
     logout () {        
         window.localStorage.setItem('token', '');
         window.localStorage.setItem('user', '');
-
-        axios.defaults.headers.common['Authorization'] = '' ;
-
-        this.token = '';
-        this.user = '';
-        Bearer 
+        this.token = null;
+        this.user = null;
         Event.$emit('userLoggedOut');
-        
     }
 
     check () {

@@ -10,34 +10,67 @@ use App\User;
 
 class AuthController extends Controller
 {
+    private $name;
+    private $email;
+    private $password;
+
+    public function __construct()
+    {
+        $this->email = request('email') ?? '';
+        $this->name = request('name') ?? '';
+        $this->password = request('password') ?? '';
+    }
     public function register()
     {
-        User::create([
-            'name' => request('name'),
-            'email' => request('email'),
-            'password' => bcrypt(request('password'))
-        ]);
-
-        // $this->login();
-    }
-
-    public function login()
-    {
-        // Проверяем существует ли пользователь с указанным email адресом
-        $user = User::whereEmail(request('email'))->first();
-
-        if (!$user) {
+        $nameRe = "/^.{3,}$/";
+        $passwordRe = "/^.{6,}$/";
+        if (! preg_match($nameRe, $this->name)) {
             return response()->json([
-                'message' => 'Wrong email ',
+                'message' => 'Имя должно состоять более, чем из 3 символов',
                 'status' => 422
             ], 422);
         }
 
-        // Если пользователь с таким email адресом найден - проверим совпадает
-        // ли его пароль с указанным
-        if (!Hash::check(request('password'), $user->password)) {
+        if (! preg_match($passwordRe, $this->password)) {
             return response()->json([
-                'message' => 'Wrong email or password',
+                'message' => 'Пароль должен состоять более, чем из 6 символов',
+                'status' => 422
+            ], 422);
+        }
+
+        $user = User::whereEmail($this->email)->first();
+
+        if ($user) {
+            return response()->json([
+                'message' => 'Пользователь с данным email уже существует',
+                'status' => 422
+            ], 422);
+        }
+
+
+        User::create([
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => bcrypt($this->password)
+        ]);
+
+        return $this->login();
+    }
+
+    public function login()
+    {
+        $user = User::whereEmail($this->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Неверно введены email или пароль',
+                'status' => 422
+            ], 422);
+        }
+
+        if (!Hash::check($this->password, $user->password)) {
+            return response()->json([
+                'message' => 'Неверно введены email или пароль',
                 'status' => 422
             ], 422);
         }
@@ -51,7 +84,7 @@ class AuthController extends Controller
         // установлен правильно)
         if (!$client) {
             return response()->json([
-                'message' => 'Laravel Passport is not setup properly.',
+                'message' => 'Что-то пошло не так',
                 'status' => 500
             ], 500);
         }
@@ -60,8 +93,8 @@ class AuthController extends Controller
             'grant_type' => 'password',
             'client_id' => $client->id,
             'client_secret' => $client->secret,
-            'username' => request('email'),
-            'password' => request('password'),
+            'username' => $this->email,
+            'password' => $this->password,
         ];
 
         $request = Request::create('/oauth/token', 'POST', $data);
@@ -98,7 +131,11 @@ class AuthController extends Controller
             ]);
     
         $accessToken->revoke();
-    
+        
+        $this->email = '';
+        $this->name = '';
+        $this->password = '';
+
         return response()->json(['status' => 200]);
     }
 

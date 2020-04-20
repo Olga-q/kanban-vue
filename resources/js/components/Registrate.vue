@@ -1,25 +1,21 @@
 <template>
     <div class="container">
+        <router-link to="/">Главная</router-link>
+        <router-link to="/login">Вход</router-link>
         <div class="row justify-content-center">
             <div class="col-md-4">
-                <form>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" v-model="email" required>
+                <form   id="registrate" @submit="registrate">
+                    <div class="alert alert-danger" role="alert" v-if="register.error">
+                        {{register.message}}
                     </div>
-                    <div class="form-group">
-                        <label for="name">Имя</label>
-                        <input type="text" class="form-control" id="name" name="name" v-model="name" required>
+                    <Feeld v-model="email" feeld="email" @emitError="emitError"></Feeld>
+                    <Feeld v-model="name" feeld="name" @emitError="emitError"></Feeld>
+                    <Feeld v-model="password" feeld="password" @emitError="emitErrorPassword"></Feeld>
+                    <Feeld v-model="passwordConf" feeld="passwordConf" @emitError="emitErrorPassword"></Feeld>
+                    <div class="alert alert-danger" role="alert" v-if="errors.passwordConf">
+                        Пароли не совпадают
                     </div>
-                    <div class="form-group">
-                        <label for="password">Пароль</label>
-                        <input type="password" class="form-control" id="password" name="password" v-model="password" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password-confirm">Подтвердите пароль</label>
-                        <input type="password" class="form-control" id="password-confirm" name="passwordConf" v-model="passwordConf" required>
-                    </div>
-                    <button @click="registrate" type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                    <input type="submit" value="Зарегистрироваться">
                 </form>
             </div>
         </div>        
@@ -27,33 +23,71 @@
 </template>
  
 <script>
+    import Feeld from './formFeelds/Feeld';
+
     export default {
-        data() {
+        components: {
+            Feeld,
+        },
+
+        data: function() {
             return {
                 email: '',
                 name: '',
                 password: '',
                 passwordConf: '',
+                errors: {
+                    email: false,
+                    name: false,
+                    password: false,
+                    passwordConf: false
+                },
+                invalid : false,
+                register: {
+                    error: false,
+                    message: '',
+                },
             };
         },
+        
 
         methods: {
-            registrate() {
-                let data = {
-                    email: this.email,
-                    name: this.name,
-                    password: this.password
-                };
+            emitError (data) {
+                this.errors [data.feeld] = data.status;
+            },
 
-                axios.post('/api/register', data)
-                    // .then(({data}) => {
-                    //     auth.login(data.token, data.user);
+            emitErrorPassword (data) {
+                this.emitError (data);
+                console.log(this.passwordConf);
+                console.log(data.feeld);
+                if (! (data.feeld === 'password' && this.errors.passwordConf === false && this.passwordConf === '')){
+                    this.errors ['passwordConf'] = (this.password !== this.passwordConf);
+                }
+            },
 
-                    //     this.$router.push('/home');
-                    // })  
-                    // .catch(({response}) => {                    
-                    //     alert(response.data.message);
-                    // });
+            registrate: function (e) {
+                for (let error in this.errors) {
+                    this.invalid = (this.invalid || this.errors[error]);
+                }
+                if (!this.invalid) {
+                    let data = {
+                        email: this.email,
+                        name: this.name,
+                        password: this.password
+                    };
+
+                    axios.post('/api/register', data)
+                        .then(({data}) => {
+                            auth.login(data.token, data.user);
+
+                            this.$router.push('/home');
+                        })  
+                        .catch(({response}) => {                    
+                            this.register.error = true;
+                            this.register.message = response.data.message;
+                        });
+                }
+                e.preventDefault();
             }
         }
     }

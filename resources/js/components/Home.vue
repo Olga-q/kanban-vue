@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <button type="button" @click="logout" class="btn btn-primary">Выйти</button>
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <form method="POST" class="js-form">
@@ -8,7 +9,8 @@
                         <input name="note" id="new-note" size="25" placeholder="Описание"/>
                         <select id="select-user" name="user"> 
                         </select>
-                        <input type="submit" name="button" value="+" />
+                        <!-- <input type="submit" name="button" value="+" /> -->
+                        <button type="button" class="btn btn-primary">+</button>
                     </fieldset>
                 </form>
 
@@ -37,8 +39,13 @@
  
 <script>
     export default {
-        mounted() {
-            
+        methods: {
+            logout() {
+                axios.post('/api/logout').then(() => {
+                    auth.logout();
+                    this.$router.push('login');
+                }) ;
+            }
         }
     }
 </script>

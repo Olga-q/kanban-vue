@@ -1,13 +1,5 @@
 <template>
     <div>
-        <div v-if="authenticated && user">
-            
-
-            <router-link to="/logout">Logout</router-link>
-        </div>
-
-        <router-link to="/login" v-else>Login</router-link>
-        <router-link to="/registration">Registeration</router-link>
 
         <router-view></router-view>
     </div>
@@ -15,19 +7,27 @@
  
 <script>
     export default {
-        data() {
-            return {
-                authenticated: auth.check(),
-                user: auth.user
-            };
-        },
+        // data() {
+        //     return {
+        //         authenticated: false,
+        //         user: null
+        //     };
+        // },
 
-        mounted() {
-            Event.$on('userLoggedIn', () => {
-                this.authenticated = true;
-                this.user = auth.user;
-            });
-            console.log(this.authenticated);
-        },
+        // mounted() {
+        //     Event.$on('userLoggedIn', () => {
+        //         this.authenticated = true;
+        //         this.user = auth.user;
+        //     });
+        //     Event.$on('userLoggedOut', () => {
+        //         this.authenticated = false;
+        //         this.user = null;
+        //     });
+        //     this.authenticated = auth.check();
+        //     this.user = auth.user;
+
+        //     console.log(this.authenticated);
+        //     console.log(this.user);
+        // },
     }
 </script>

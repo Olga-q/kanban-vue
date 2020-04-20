@@ -1,11 +1,11 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
-// import BootstrapVue from 'bootstrap-vue';
-// Vue.use(BootstrapVue); 
+
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
-import route from './route';
+
+
 import router from './router';
 import App from './components/App';
 import Auth from './auth.js';

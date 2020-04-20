@@ -2,7 +2,6 @@ import VueRouter from 'vue-router';
 import Main from './components/Main';
 import Home from './components/Home';
 import Login from './components/Login';
-import Logout from './components/Logout';
 import Registrate from './components/Registrate';
  
 const router = new VueRouter ({
@@ -10,8 +9,7 @@ const router = new VueRouter ({
         {path: '/', component : Main},
         {path: '/home', component : Home, meta: { middlewareAuth: true }},
         {path: '/login', component : Login},
-        {path: '/logout', component : Logout},
-        {path: '/registration', component : Registrate},
+        {path: '/registrate', component : Registrate},
     ],
     mode:'history'
 });
@@ -23,13 +21,15 @@ router.beforeEach((to, from, next) => {
             next({
                 path: '/login',
                 query: { redirect: to.fullPath }
-            });
-
-            return;
+            });   
+        }
+        else{
+            next();
         }
     }
-
-    next();
+    else {
+        next();
+    }
 })
 
 export default router;

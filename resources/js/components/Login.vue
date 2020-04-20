@@ -1,18 +1,18 @@
 <template>
     <div class="container">
+        <router-link to="/">Главная</router-link>
+        <router-link to="/registrate">Регистрация</router-link>
         <div class="row justify-content-center">
             <div class="col-md-4">
                 <h1>Login</h1>
-                <form>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" v-model="email" required>
+                <form id="login" @submit="login">
+                    <div class="alert alert-danger" role="alert" v-if="loginError.status">
+                        {{loginError.message}}
                     </div>
-                    <div class="form-group">
-                        <label for="password">Пароль</label>
-                        <input type="password" class="form-control" id="password" name="password" v-model="password" required>
-                    </div>
-                    <button @click="login" type="submit" class="btn btn-primary">Войти</button>
+                    <Feeld v-model="email" feeld="email" @emitError="emitError"></Feeld>
+                    <Feeld v-model="password" feeld="password" @emitError="emitError"></Feeld>
+                    <input type="submit" value="Войти">
+                    
                 </form>
             </div>
         </div>        
@@ -20,30 +20,48 @@
 </template>
  
 <script>
+    import Feeld from './formFeelds/Feeld';
+
     export default {
-        data() {
+        components: {
+            Feeld,
+        },
+
+        data: function() {
             return {
                 email: '',
                 password: '',
+                errors: {email: false},
+                loginError: {
+                    status: false,
+                    message: '',
+                }
             };
         },
 
         methods: {
-            login() {
-                let data = {
-                    email: this.email,
-                    password: this.password
-                };
+            emitError (data) {
+                this.errors [data.feeld] = data.status;
+            },
+            
+            login: function (e) {
+                if (!this.errors.email) {
+                    let data = {
+                        email: this.email,
+                        password: this.password
+                    };
 
-                axios.post('/api/login', data)
-                    .then(({data}) => {
-                        auth.login(data.token, data.user);
-
-                        this.$router.push('home');
-                    })  
-                    .catch(({response}) => {                    
-                        alert(response.data.message);
-                    })
+                    axios.post('/api/login', data)
+                        .then(({data}) => {
+                            auth.login(data.token, data.user);
+                            this.$router.push('home');
+                        })  
+                        .catch(({response}) => {    
+                            this.loginError.status = true;
+                            this.loginError.message = response.data.message;
+                        })
+                }
+                e.preventDefault();
             }
         }
     }
